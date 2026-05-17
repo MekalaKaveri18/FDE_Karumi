@@ -1,47 +1,16 @@
 """Streamlit Dashboard for Session Monitoring"""
 
-import sys
-import os
-
-# Add parent directories to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
-
 import streamlit as st
 import json
 from datetime import datetime
 import pandas as pd
-from src.monitoring import get_dashboard, Severity, EventType
-
-
-def create_demo_session(dashboard):
-    """Create a demo session with sample events"""
-    demo_session = dashboard.create_session("demo_session")
-    
-    # Add sample events
-    events_data = [
-        (EventType.NAVIGATION, Severity.INFO, "Navigated to application dashboard"),
-        (EventType.WAIT, Severity.INFO, "Waiting for page load (2.3s)"),
-        (EventType.CLICK, Severity.INFO, "Clicked 'Run Report' button"),
-        (EventType.INPUT, Severity.INFO, "Entered date range filter"),
-        (EventType.WAIT, Severity.INFO, "Processing report request"),
-        (EventType.SCREENSHOT, Severity.INFO, "Captured report preview"),
-        (EventType.CLICK, Severity.INFO, "Clicked 'Export' button"),
-        (EventType.ERROR, Severity.WARNING, "Network timeout - retrying request"),
-        (EventType.WAIT, Severity.INFO, "Retrying with exponential backoff"),
-        (EventType.SCREENSHOT, Severity.INFO, "Export completed successfully"),
-        (EventType.CONVERSATION, Severity.INFO, "Agent: 'Report exported to PDF format'"),
-    ]
-    
-    for event_type, severity, message in events_data:
-        demo_session.log_event(event_type=event_type, severity=severity, message=message)
-    
-    return demo_session
+from src.monitoring import get_dashboard, Severity
 
 
 def main():
     st.set_page_config(page_title="Karumi Monitoring Dashboard", layout="wide")
     
-    st.title(" Karumi Monitoring Dashboard")
+    st.title("🔍 Karumi Monitoring Dashboard")
     st.markdown("Real-time monitoring for AI agent deployment sessions")
     
     dashboard = get_dashboard()
@@ -54,10 +23,8 @@ def main():
     sessions = dashboard.get_all_sessions()
     
     if not sessions:
-        st.warning(" No active sessions detected. Displaying demo data...")
-        # Create demo session
-        demo_session = create_demo_session(dashboard)
-        sessions = dashboard.get_all_sessions()
+        st.info("No active sessions. Start a monitoring session to see data here.")
+        return
     
     # Session selector
     selected_session = st.sidebar.selectbox("Select Session", sessions)
@@ -109,7 +76,7 @@ def main():
                 return ""
             
             st.dataframe(
-                df.style.applymap(color_severity, subset=["Severity"]),
+                df.style.map(color_severity, subset=["Severity"]),
                 use_container_width=True
             )
         
@@ -124,7 +91,7 @@ def main():
             with col1:
                 st.subheader("Recent Errors")
                 for event in error_events[-5:]:
-                    with st.expander(f" {event.message}", expanded=False):
+                    with st.expander(f"❌ {event.message}", expanded=False):
                         st.write(f"**Time**: {event.timestamp}")
                         st.write(f"**Type**: {event.event_type.value}")
                         if event.details:
@@ -134,9 +101,9 @@ def main():
                 st.subheader("Suggestions")
                 for event in error_events[-5:]:
                     if event.suggestion:
-                        st.info(f" {event.suggestion}")
+                        st.info(f"💡 {event.suggestion}")
         else:
-            st.success(" No errors detected!")
+            st.success("✅ No errors detected!")
         
         # Export data
         st.header("Export")
