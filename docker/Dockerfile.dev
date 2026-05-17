@@ -1,0 +1,16 @@
+# Build arguments
+ARG PYTHON_VERSION=3.11
+
+FROM python:${PYTHON_VERSION}-slim as base
+
+# Development dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -u 1000 karumi
+USER karumi
+
+WORKDIR /app

@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./screenshots:/app/screenshots
+      - ./logs:/app/logs
+    command: python -m src.monitoring.api
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8501:8501"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - STREAMLIT_SERVER_HEADLESS=true
+    volumes:
+      - ./screenshots:/app/screenshots
+      - ./logs:/app/logs
+    command: streamlit run src/monitoring/dashboard.py
+    depends_on:
+      - api
+
+  validator:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      - PYTHONUNBUFFERED=1
+      - KARUMI_ENV=production
+    volumes:
+      - ./reports:/app/reports
+      - ./screenshots:/app/screenshots
+    command: python src/validators/cli.py --help
+
+volumes:
+  screenshots:
+  logs:
+  reports:
