@@ -79,9 +79,9 @@ def main():
         df = pd.DataFrame(event_data)
 
         def color_severity(val):
-            if val == "error":    return "background-color: #4a1a1a; color: #f87171"
-            if val == "critical": return "background-color: #4a0a0a; color: #f87171"
-            if val == "warning":  return "background-color: #3a2e00; color: #fbbf24"
+            if val == "error":    return "background-color: #fee2e2; color: #b91c1c"
+            if val == "critical": return "background-color: #fecaca; color: #991b1b"
+            if val == "warning":  return "background-color: #fef9c3; color: #92400e"
             return ""
 
         st.dataframe(
